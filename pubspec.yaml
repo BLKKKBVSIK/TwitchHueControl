@@ -8,6 +8,7 @@ environment:
 
 dependencies:
   tmi: ^0.0.4
+  hue_dart: ^0.3.0
 #   path: ^1.8.0
 
 dev_dependencies:
