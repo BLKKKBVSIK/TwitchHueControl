@@ -1,61 +1,74 @@
+import 'dart:convert';
 import 'dart:io';
+import 'package:cli_menu/cli_menu.dart';
 import 'package:color_models/color_models.dart';
 import 'package:http/http.dart' as http;
 import 'package:hue_dart/hue_dart.dart';
 import 'package:tmi/tmi.dart' as tmi;
 
-void main(List<String> args) async {
+void main() async {
   Bridge hueBridge;
-  bool _init = false;
+  var _init = false;
   String _hueUserHash;
 
-  print('DETECTING HUE BRIDGE ON LOCAL NETWORK');
+  print('STEP 1: DETECTING HUE BRIDGE ON LOCAL NETWORK\n');
   hueBridge ??= await detectHueBridge();
-  if (hueBridge == null) {
-    print('NO HUE BRIDGE DETECTED');
-  }
+
+  print('STEP 2: FETCHING HUE BRIDGE USER\n');
 
   if (await File('TwitchHueBotConfig.ini').exists()) {
+    print('User fetched from TwitchHueBotConfig.ini\n\n');
     _hueUserHash =
         (await File('TwitchHueBotConfig.ini').readAsString()).split(':').last;
     hueBridge.username = _hueUserHash;
   } else {
+    print(
+        'No user fetched from config files, please push on the Hue Bridge button.\nAwaiting.');
+    var i = 0;
     while (!_init) {
       try {
-        final whiteListItem = await hueBridge.createUser('twitchhuebot');
+        final whiteListItem = await hueBridge.createUser('hue#twitchhuebot');
         hueBridge.username = _hueUserHash = whiteListItem.username;
         _init = true; //Disables the while loop
       } catch (error) {
-        print('Failed to fetch/create user on hue bridge');
+        i++;
+        if (i >= 20) {
+          stdout.write('.');
+          i = 0;
+        }
       }
     }
-    File f = await File('TwitchHueBotConfig.ini').create();
+    print('\nUser created, saving user to TwitchHueBotConfig.ini\n\n');
+    var f = await File('TwitchHueBotConfig.ini').create();
     final link = f.openWrite();
     link.write('hueUserHash:$_hueUserHash');
-    link.close();
+    await link.close();
   }
 
-  Light selectedLight = await detectSurroundingHueLights(hueBridge: hueBridge);
+  print('STEP 2: FETCHING HUE BRIDGE USER\n');
 
-/* 
-  print('');
-    var line = stdin.readLineSync(encoding: Encoding.getByName('utf-8'));
-    print(line.trim() == '2' ? 'Yup!' : 'Nope :('); */
-/* 
-  final whiteListItem = await hueBridge.createUser('twitch-hue');
-  hueBridge.username = whiteListItem.username; */
+  var selectedLight = await detectSurroundingHueLights(hueBridge: hueBridge);
 
-  print('CONNECTING TO "${args[0]}" TWITCH CHANNEL');
+  print('\nSTEP 3: CONNECTING TO YOUR TWITCH CHANNEL CHAT\n');
+
+  print('Enter your channel name:');
+  var channelName = stdin.readLineSync(encoding: Encoding.getByName('utf-8'));
+
+  print('Awaiting connection to "$channelName" Twitch channel');
   var client = tmi.Client(
-    channels: '${args[0]}',
+    channels: '${channelName.trim()}',
     secure: true,
   );
   client.connect();
+
+  print(
+      '\nYour program is now ready, type !color <hexValue> in your twitch chat');
 
   client.on('message', (String channel, _, String message, __) async {
     if (message.toLowerCase().startsWith('!color ')) {
       var color = message.split(' ').last;
       if (color.isNotEmpty) {
+        //TODO: When black color selected, remove the brightness;
         final regExp = RegExp(r'[0-9A-F]{6}', caseSensitive: false);
         if (regExp.hasMatch(color)) {
           await updateSelectedLightColor(
@@ -73,7 +86,11 @@ Future<Bridge> detectHueBridge() async {
   final discovery = BridgeDiscovery(client);
   var discoverResults = await discovery.automatic();
 
-  print(discoverResults.first.ipAddress);
+  if (discoverResults.isEmpty) {
+    print('No bridge discover');
+    exit(2);
+  }
+  print('Hue Bridge discovered on ${discoverResults.first.ipAddress}\n\n');
 
   return Bridge(client, discoverResults.first.ipAddress);
 }
@@ -82,8 +99,8 @@ LightState lightStateForColorOnly(Light _light) {
   LightState state;
   if (_light.state.colorMode == 'xy') {
     state = LightState((b) {
-      b..xy = _light.state.xy.toBuilder();
-      b..brightness = 254;
+      b.xy = _light.state.xy.toBuilder();
+      b.brightness = 254;
     });
   } else if (_light.state.colorMode == 'ct') {
     state = LightState((b) => b..ct = _light.state.ct);
@@ -101,22 +118,31 @@ Future updateSelectedLightColor(
   final _assignedColor = HsbColor.fromHex('$color');
 
   final _updatedSelectedLight = selectedLight.changeColor(
-      red: _assignedColor.toXyzColor().x,
-      green: _assignedColor.toXyzColor().y,
-      blue: _assignedColor.toXyzColor().z);
+      red: _assignedColor.toXyzColor().x.toDouble(),
+      green: _assignedColor.toXyzColor().y.toDouble(),
+      blue: _assignedColor.toXyzColor().z.toDouble());
 
-  LightState state = lightStateForColorOnly(_updatedSelectedLight);
+  var state = lightStateForColorOnly(_updatedSelectedLight);
   await hueBridge.updateLightState(selectedLight.rebuild((l) {
-    l..state = state.toBuilder();
+    l.state = state.toBuilder();
   }));
 }
 
 Future<Light> detectSurroundingHueLights({Bridge hueBridge}) async {
   final lights = await hueBridge.lights();
+  var roomsName = <String>[];
+  Light selectedLight;
 
-  // TODO: Tell to the user to choose between lights;
+  if (lights.isNotEmpty) {
+    for (var light in lights) {
+      roomsName.add(light.name);
+    }
 
-  Light selectedLight = lights[1];
+    print('Select your light:');
+    final menu = Menu(roomsName);
+    final result = menu.choose();
 
+    selectedLight = lights[roomsName.indexOf(result.value)];
+  }
   return selectedLight;
 }
