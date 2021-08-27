@@ -10,6 +10,7 @@ dependencies:
   tmi: ^0.0.4
   hue_dart: ^0.3.0
   color_models: ^1.2.1
+  cli_menu: ^0.2.3
 #   path: ^1.8.0
 
 dev_dependencies:
