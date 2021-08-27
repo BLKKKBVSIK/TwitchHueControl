@@ -29,7 +29,7 @@ void main() async {
       try {
         final whiteListItem = await hueBridge.createUser('hue#twitchhuebot');
         hueBridge.username = _hueUserHash = whiteListItem.username;
-        _init = true; //Disables the while loop
+        _init = true;
       } catch (error) {
         i++;
         if (i >= 20) {
@@ -138,7 +138,7 @@ Future<Light> detectSurroundingHueLights({Bridge hueBridge}) async {
       roomsName.add(light.name);
     }
 
-    print('Select your light:');
+    print('Select your light (Use arrows (if supported), or type number):');
     final menu = Menu(roomsName);
     final result = menu.choose();
 
