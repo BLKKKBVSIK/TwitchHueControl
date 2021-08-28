@@ -95,20 +95,20 @@ Future<Bridge> detectHueBridge() async {
   return Bridge(client, discoverResults.first.ipAddress);
 }
 
-LightState lightStateForColorOnly(Light _light) {
+LightState lightStateForColorOnly({Light light, int brightness}) {
   LightState state;
-  if (_light.state.colorMode == 'xy') {
+  if (light.state.colorMode == 'xy') {
     state = LightState((b) {
-      b.xy = _light.state.xy.toBuilder();
-      b.brightness = 254;
+      b.xy = light.state.xy.toBuilder();
+      b.brightness = brightness;
     });
-  } else if (_light.state.colorMode == 'ct') {
-    state = LightState((b) => b..ct = _light.state.ct);
+  } else if (light.state.colorMode == 'ct') {
+    state = LightState((b) => b..ct = light.state.ct);
   } else {
     state = LightState((b) => b
-      ..hue = _light.state.hue
-      ..saturation = _light.state.saturation
-      ..brightness = _light.state.brightness);
+      ..hue = light.state.hue
+      ..saturation = light.state.saturation
+      ..brightness = light.state.brightness);
   }
   return state;
 }
@@ -116,13 +116,21 @@ LightState lightStateForColorOnly(Light _light) {
 Future updateSelectedLightColor(
     {Light selectedLight, Bridge hueBridge, String color}) async {
   final _assignedColor = HsbColor.fromHex('$color');
+  var _assignedBrightness = 254;
+  var _updatedSelectedLight = selectedLight;
 
-  final _updatedSelectedLight = selectedLight.changeColor(
-      red: _assignedColor.toXyzColor().x.toDouble(),
-      green: _assignedColor.toXyzColor().y.toDouble(),
-      blue: _assignedColor.toXyzColor().z.toDouble());
+  if (color == '000000') {
+    _assignedBrightness = 0;
+  } else {
+    _updatedSelectedLight = selectedLight.changeColor(
+        red: _assignedColor.toXyzColor().x.toDouble(),
+        green: _assignedColor.toXyzColor().y.toDouble(),
+        blue: _assignedColor.toXyzColor().z.toDouble());
+  }
+  // 00 00 00
 
-  var state = lightStateForColorOnly(_updatedSelectedLight);
+  var state = lightStateForColorOnly(
+      light: _updatedSelectedLight, brightness: _assignedBrightness);
   await hueBridge.updateLightState(selectedLight.rebuild((l) {
     l.state = state.toBuilder();
   }));
