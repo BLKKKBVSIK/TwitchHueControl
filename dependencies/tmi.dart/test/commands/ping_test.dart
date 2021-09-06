@@ -14,7 +14,7 @@ void main() {
     logger = MockLogger();
   });
 
-  test("ensure emit ping event", () {
+  test('ensure emit ping event', () {
     // GIVEN
     var message = Message();
     var command = Ping(client, logger);
@@ -23,10 +23,10 @@ void main() {
     command.call(message);
 
     // THEN
-    verify(client.emit("ping"));
+    verify(client.emit('ping'));
   });
 
-  test("should send PONG response", () {
+  test('should send PONG response', () {
     var message = Message();
     var command = Ping(client, logger);
 
@@ -34,6 +34,6 @@ void main() {
     command.call(message);
 
     // THEN
-    verify(client.send("PONG"));
+    verify(client.send('PONG'));
   });
 }

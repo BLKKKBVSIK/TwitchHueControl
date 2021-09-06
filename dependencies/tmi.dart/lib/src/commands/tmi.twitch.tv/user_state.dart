@@ -15,7 +15,7 @@ class UserState extends Command {
     message.tags!['username'] = client.username;
 
     // Add the client to the moderators of this room..
-    if (message.tags!["user-type"] == "mod") {
+    if (message.tags!['user-type'] == 'mod') {
       if (!client.moderators.containsKey(client.lastJoined)) {
         client.moderators[client.lastJoined] = [];
       }
@@ -29,13 +29,13 @@ class UserState extends Command {
       client.userstate[channel] = message.tags;
       client.lastJoined = channel;
       // this.channels.push(channel);
-      log.i("Joined ${channel}");
-      client.emit("join", [channel, _.username(client.username), true]);
+      log.i('Joined ${channel}');
+      client.emit('join', [channel, _.username(client.username), true]);
     }
 
     // Emote-sets has changed, update it..
-    if (message.tags!["emote-sets"] != client.emotes) {
-      _updateEmoteset(message.tags!["emote-sets"]);
+    if (message.tags!['emote-sets'] != client.emotes) {
+      _updateEmoteset(message.tags!['emote-sets']);
     }
 
     client.userstate[channel] = message.tags;

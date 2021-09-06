@@ -13,6 +13,6 @@ class Pong extends Command {
     client.currentLatency = (currDate.millisecondsSinceEpoch -
             client.latency.millisecondsSinceEpoch) ~/
         1000;
-    client.emit("pong", [client.currentLatency]);
+    client.emit('pong', [client.currentLatency]);
   }
 }

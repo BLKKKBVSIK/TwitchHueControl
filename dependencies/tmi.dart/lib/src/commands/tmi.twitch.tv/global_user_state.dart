@@ -18,8 +18,8 @@ class GlobalUserState extends Command {
     client.globaluserstate = message.tags;
 
     // Received emote-sets..
-    if (message.tags!["emote-sets"] != null) {
-      _updateEmoteset(message.tags!["emote-sets"]);
+    if (message.tags!['emote-sets'] != null) {
+      _updateEmoteset(message.tags!['emote-sets']);
     }
   }
 
@@ -35,20 +35,21 @@ class GlobalUserState extends Command {
       var token = client.getToken();
 
       var url =
-          "https://api.twitch.tv/kraken/chat/emoticon_images?emotesets=${sets}";
+          'https://api.twitch.tv/kraken/chat/emoticon_images?emotesets=${sets}';
       var headers = {
-        "Authorization": "OAuth ${_.token(token)}",
-        "Client-ID": client.clientId,
+        'Authorization': 'OAuth ${_.token(token)}',
+        'Client-ID': client.clientId,
       };
 
-      var response = await http.get(Uri.tryParse(url)!, headers: headers as Map<String, String>?);
+      var response = await http.get(Uri.tryParse(url)!,
+          headers: headers as Map<String, String>?);
       print('Response status: ${response.statusCode}');
       print('Response body: ${response.body}');
 
       if (response.statusCode == 200) {
         var jsonResponse = convert.jsonDecode(response.body);
-        client.emotesets = jsonResponse["emoticon_sets"] ?? {};
-        client.emit("emotesets", [sets, client.emotesets]);
+        client.emotesets = jsonResponse['emoticon_sets'] ?? {};
+        client.emit('emotesets', [sets, client.emotesets]);
       }
     });
   }

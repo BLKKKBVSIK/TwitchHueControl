@@ -33,7 +33,7 @@ class Client {
   late Map<String, dynamic> userstate;
   String? lastJoined;
   Map<String?, List<String?>> moderators = Map();
-  String? emotes = "";
+  String? emotes = '';
   Map<String, String> emotesets = {};
   bool? wasCloseCalled;
   bool? reconnect;
@@ -46,37 +46,37 @@ class Client {
   Client({this.channels, required this.secure})
       : _sok = IOWebsok(host: 'irc-ws.chat.twitch.tv', tls: secure) {
     noScopeCommands = {
-      "PING": Ping(this, log),
-      "PONG": Pong(this, log),
+      'PING': Ping(this, log),
+      'PONG': Pong(this, log),
     };
 
     twitchCommands = {
-      "001": Username(this, log),
-      "002": NoOp(this, log),
-      "003": NoOp(this, log),
-      "004": NoOp(this, log),
-      "375": NoOp(this, log),
-      "376": NoOp(this, log),
-      "CAP": NoOp(this, log),
-      "372": Connected(this, log),
-      "USERNOTICE": UserNotice(this, log),
-      "HOSTTARGET": HostTarget(this, log),
-      "CLEARCHAT": ClearChat(this, log),
-      "CLEARMSG": ClearMsg(this, log),
-      "USERSTATE": UserState(this, log),
-      "ROOMSTATE": RoomState(this, log),
-      "SERVERCHANGE": NoOp(this, log),
-      "NOTICE": Notice(this, log),
-      "GLOBALUSERSTATE": GlobalUserState(this, log),
+      '001': Username(this, log),
+      '002': NoOp(this, log),
+      '003': NoOp(this, log),
+      '004': NoOp(this, log),
+      '375': NoOp(this, log),
+      '376': NoOp(this, log),
+      'CAP': NoOp(this, log),
+      '372': Connected(this, log),
+      'USERNOTICE': UserNotice(this, log),
+      'HOSTTARGET': HostTarget(this, log),
+      'CLEARCHAT': ClearChat(this, log),
+      'CLEARMSG': ClearMsg(this, log),
+      'USERSTATE': UserState(this, log),
+      'ROOMSTATE': RoomState(this, log),
+      'SERVERCHANGE': NoOp(this, log),
+      'NOTICE': Notice(this, log),
+      'GLOBALUSERSTATE': GlobalUserState(this, log),
     };
 
     userCommands = {
-      "JOIN": Join(this, log),
-      "PART": Part(this, log),
-      "WHISPER": Whisper(this, log),
-      "PRIVMSG": PrivMsg(this, log),
-      "366": NoOp(this, log),
-      "353": Names(this, log),
+      'JOIN': Join(this, log),
+      'PART': Part(this, log),
+      'WHISPER': Whisper(this, log),
+      'PRIVMSG': PrivMsg(this, log),
+      '366': NoOp(this, log),
+      '353': Names(this, log),
     };
 
     _monitor = Monitor(this);
@@ -124,7 +124,7 @@ class Client {
           f(params[0], params[1], params[2], params[3], params[4], params[5]);
           break;
         default:
-          throw Exception("Got more params that I can handle");
+          throw Exception('Got more params that I can handle');
       }
     });
   }
@@ -142,7 +142,7 @@ class Client {
   void _onOpen() {
     if ((_sok == null) || !_sok.isActive) return;
 
-    emit("connecting");
+    emit('connecting');
 
     // check if we have username
     var username = _.justinfan();
@@ -150,18 +150,18 @@ class Client {
     // generate password from token
     var password = false;
 
-    emit("logon");
+    emit('logon');
     _sok.send(
-      "CAP REQ :twitch.tv/tags twitch.tv/commands twitch.tv/membership",
+      'CAP REQ :twitch.tv/tags twitch.tv/commands twitch.tv/membership',
     );
     if (password) {
-      _sok.send("PASS $password");
+      _sok.send('PASS $password');
     }
-    _sok.send("NICK $username");
+    _sok.send('NICK $username');
   }
 
   void _onData(dynamic event) {
-    var parts = (event as String).split("\r\n");
+    var parts = (event as String).split('\r\n');
 
     parts
         .where((part) => part != null && part.isNotEmpty)
@@ -169,11 +169,11 @@ class Client {
   }
 
   void _handleMessage(Message message) {
-    if (emitter.getListenersCount("raw_message") > 0) {
-      emit("raw_message", [message]);
+    if (emitter.getListenersCount('raw_message') > 0) {
+      emit('raw_message', [message]);
     }
 
-    var msgid = message.tags!["msg-id"];
+    var msgid = message.tags!['msg-id'];
 
     // Parse badges, badge-info and emotes..
     message.tags!.addAll(_.badges(_.badgeInfo(_.emotes(message.tags!))));
@@ -183,19 +183,19 @@ class Client {
       var tags = message.tags!;
       for (var key in tags.keys) {
         if (![
-          "msg-param-streak-months",
-          "msg-param-viewerCount",
-          "msg-param-mass-gift-count",
-          "emote-sets",
-          "ban-duration",
-          "bits"
+          'msg-param-streak-months',
+          'msg-param-viewerCount',
+          'msg-param-mass-gift-count',
+          'emote-sets',
+          'ban-duration',
+          'bits'
         ].contains(key)) {
           dynamic value = tags[key];
           if (value.runtimeType == bool) {
             value = null;
-          } else if (value == "1") {
+          } else if (value == '1') {
             value = true;
-          } else if (value == "0") {
+          } else if (value == '0') {
             value = false;
           } else if (value.runtimeType == String) {
             value = _.unescapeIRC(value);
@@ -210,16 +210,16 @@ class Client {
       if (noScopeCommands.containsKey(message.command)) {
         noScopeCommands[message.command!]!.call(message);
       } else {
-        print("Could not parse message with no prefix:\n${message.raw}");
+        print('Could not parse message with no prefix:\n${message.raw}');
       }
-    } else if (message.prefix == "tmi.twitch.tv") {
+    } else if (message.prefix == 'tmi.twitch.tv') {
       // Messages with "tmi.twitch.tv" as a prefix..
       switch (message.command) {
         // https://github.com/justintv/Twitch-API/blob/master/chat/capabilities.md#notice
         // Received a reconnection request from the server..
-        case "RECONNECT":
+        case 'RECONNECT':
           // TODO
-          print("RECONNECT: $msgid");
+          print('RECONNECT: $msgid');
           break;
         // TODO: subs-only"
         // Wrong cluster..
@@ -229,30 +229,32 @@ class Client {
             command.call(message);
           } else {
             log.e(
-              "Could not parse message from tmi.twitch.tv:\n${message.raw}",
+              'Could not parse message from tmi.twitch.tv:\n${message.raw}',
             );
           }
           break;
       }
-    } else if (message.prefix == "jtv") {
+    } else if (message.prefix == 'jtv') {
       // Messages from jtv..
 
-      print("JTV NOT SUPPORTED");
+      print('JTV NOT SUPPORTED');
     } // Anything else..
     else {
       if (userCommands.containsKey(message.command)) {
         userCommands[message.command!]!.call(message);
       } else {
-        log.e("COMMAND ${message.command} not yet implemented");
+        log.e('COMMAND ${message.command} not yet implemented');
       }
     }
   }
 
-  Future<bool?> sendCommand(delay, String? channel, command, Function fn) async {
+  Future<bool?> sendCommand(
+      delay, String? channel, command, Function fn) async {
     return _sendCommand(delay, channel, command, fn);
   }
 
-  Future<bool?> _sendCommand(delay, String? channel, command, Function fn) async {
+  Future<bool?> _sendCommand(
+      delay, String? channel, command, Function fn) async {
     // Make sure the socket is opened..
     if (!_wsReady()) {
       // Disconnected from server..
@@ -262,12 +264,12 @@ class Client {
     // Executing a command on a channel..
     if (channel != null && channel.isNotEmpty) {
       var chan = _.channel(channel);
-      log.d("[${chan}] Executing command: ${command}");
-      _sok.send("PRIVMSG ${chan} :${command}");
+      log.d('[$chan] Executing command: $command');
+      _sok.send('PRIVMSG $chan :$command');
     } else {
       // Executing a raw command..
 
-      log.d("Executing command: ${command}");
+      log.d('Executing command: $command');
       _sok.send(command);
     }
     return fn();

@@ -8,15 +8,15 @@ import '../../mocks.dart';
 void main() {
   late var client;
   late var logger;
-  var message = Message.parse(":ronni!ronni@ronni.tmi.twitch.tv JOIN #dallas");
+  var message = Message.parse(':ronni!ronni@ronni.tmi.twitch.tv JOIN #dallas');
 
   setUp(() {
     client = MockClient();
     logger = MockLogger();
-    when(client.username).thenReturn("justinfan33");
+    when(client.username).thenReturn('justinfan33');
   });
 
-  test("emits when a user join to the chat", () {
+  test('emits when a user join to the chat', () {
     // GIVEN
     var command = Join(client, logger);
 
@@ -24,21 +24,21 @@ void main() {
     command.call(message);
 
     // THEN
-    verify(client.emit("join", ["#dallas", "ronni", false]));
+    verify(client.emit('join', ['#dallas', 'ronni', false]));
   });
 
-  test("detects if the join message if from myself", () {
+  test('detects if the join message if from myself', () {
     // GIVEN
     var message = Message.parse(
-        ":justinfan33!justinfan33@ronni.tmi.twitch.tv JOIN #dallas");
-    when(client.username).thenReturn("justinfan33");
+        ':justinfan33!justinfan33@ronni.tmi.twitch.tv JOIN #dallas');
+    when(client.username).thenReturn('justinfan33');
     var command = Join(client, logger);
 
     // WHEN
     command.call(message);
 
     // THEN
-    verify(client.lastJoined = "#dallas");
-    verify(client.emit("join", ["#dallas", "justinfan33", true]));
+    verify(client.lastJoined = '#dallas');
+    verify(client.emit('join', ['#dallas', 'justinfan33', true]));
   });
 }

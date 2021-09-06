@@ -15,7 +15,7 @@ void main() {
     logger = MockLogger();
   });
 
-  test("do nothing on client", () {
+  test('do nothing on client', () {
     // GIVEN
     var command = NoOp(client, logger);
 
@@ -27,7 +27,7 @@ void main() {
     verifyNever(client.send(any));
   });
 
-  test("should not log anything", () {
+  test('should not log anything', () {
     var command = NoOp(client, logger);
 
     // WHEN

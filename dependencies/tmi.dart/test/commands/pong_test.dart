@@ -16,7 +16,7 @@ void main() {
     when(client.latency).thenReturn(DateTime.now());
   });
 
-  test("emits a pong event", () {
+  test('emits a pong event', () {
     // GIVEN
     var command = Pong(client, logger);
 
@@ -24,10 +24,10 @@ void main() {
     command.call(message);
 
     // THEN
-    verify(client.emit("pong", any));
+    verify(client.emit('pong', any));
   });
 
-  test("should set curreny latency on the client", () {
+  test('should set curreny latency on the client', () {
     var command = Pong(client, logger);
 
     // WHEN

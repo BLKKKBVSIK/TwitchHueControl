@@ -8,7 +8,7 @@ class Monitor {
   bool monitoring = false;
 
   Monitor(this.client) {
-    client.on("pong", (_) {
+    client.on('pong', (_) {
       pingSent = false;
     });
   }
@@ -16,14 +16,14 @@ class Monitor {
   void loop() async {
     monitoring = true;
     while (monitoring) {
-      client.send("PING");
+      client.send('PING');
       client.latency = DateTime.now();
       pingSent = true;
       await Future.delayed(Duration(milliseconds: 9999));
 
       if (pingSent == true) {
         // Pong never received!
-        print("NO PONG. Closing ...");
+        print('NO PONG. Closing ...');
       }
 
       await Future.delayed(Duration(milliseconds: 60000));

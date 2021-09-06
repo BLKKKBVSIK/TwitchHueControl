@@ -9,7 +9,7 @@ class Ping extends Command {
 
   @override
   void call(Message message) {
-    client.emit("ping");
-    client.send("PONG");
+    client.emit('ping');
+    client.send('PONG');
   }
 }

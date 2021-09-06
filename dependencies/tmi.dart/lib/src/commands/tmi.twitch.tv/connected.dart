@@ -9,7 +9,7 @@ class Connected extends Command {
 
   @override
   void call(Message message) {
-    client.emit("connected");
+    client.emit('connected');
     client.startMonitor();
 
     _join(client.channels);
@@ -18,16 +18,16 @@ class Connected extends Command {
   Future _join(String? channel) async {
     channel = _.channel(channel);
 
-    client.sendCommand(null, null, "JOIN $channel", () {
+    client.sendCommand(null, null, 'JOIN $channel', () {
       // no-op
     });
 
     var hasFulfilled = false;
-    client.on("_promiseJoin", (error, joinedChannel) {
+    client.on('_promiseJoin', (error, joinedChannel) {
       if (channel == _.channel(joinedChannel)) {
         hasFulfilled = true;
         //emitter.removeListener("_promiseJoin", listener);
-        print("JOINED!");
+        print('JOINED!');
       }
     });
 
