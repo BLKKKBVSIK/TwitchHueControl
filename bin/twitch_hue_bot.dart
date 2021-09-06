@@ -115,7 +115,7 @@ LightState lightStateForColorOnly({Light light, int brightness}) {
 
 Future updateSelectedLightColor(
     {Light selectedLight, Bridge hueBridge, String color}) async {
-  final _assignedColor = HsbColor.fromHex('$color');
+  final _assignedColor = RgbColor.fromHex('$color');
   var _assignedBrightness = 254;
   var _updatedSelectedLight = selectedLight;
 
@@ -123,11 +123,11 @@ Future updateSelectedLightColor(
     _assignedBrightness = 0;
   } else {
     _updatedSelectedLight = selectedLight.changeColor(
-        red: _assignedColor.toXyzColor().x.toDouble(),
-        green: _assignedColor.toXyzColor().y.toDouble(),
-        blue: _assignedColor.toXyzColor().z.toDouble());
+      red: (_assignedColor.red / 255).toDouble(),
+      green: (_assignedColor.green / 255).toDouble(),
+      blue: (_assignedColor.blue / 255).toDouble(),
+    );
   }
-  // 00 00 00
 
   var state = lightStateForColorOnly(
       light: _updatedSelectedLight, brightness: _assignedBrightness);
