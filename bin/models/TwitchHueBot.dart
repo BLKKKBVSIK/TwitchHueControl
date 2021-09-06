@@ -82,26 +82,37 @@ class TwitchHueBot {
   }
 
   Future connectToTwitchChat() async {
+    String? channelName;
     print('\nSTEP 3: CONNECTING TO YOUR TWITCH CHANNEL CHAT\n');
 
-    print('Enter your channel name:');
-    var channelName =
-        stdin.readLineSync(encoding: Encoding.getByName('utf-8')!) ?? '';
-    if (channelName.isEmpty) {
-      throw ("Can't connect to this channel");
-    }
+    if (await File('TwitchHueBotConfig.ini').exists() &&
+        (await File('TwitchHueBotConfig.ini').readAsLines()).length > 2) {
+      channelName = (await File('TwitchHueBotConfig.ini').readAsLines())
+          .elementAt(1)
+          .split(':')
+          .last;
 
-    if (await File('TwitchHueBotConfig.ini').exists()) {
-      var f = File('TwitchHueBotConfig.ini');
-      final link = f.openWrite(mode: FileMode.append);
-      link.writeln('\nchannelName:$channelName');
-      await link.close();
+      print(channelName);
     } else {
-      throw ('TwitchHueBotConfig.ini not found');
+      print('Enter your channel name:');
+      var channelName =
+          stdin.readLineSync(encoding: Encoding.getByName('utf-8')!) ?? '';
+      if (channelName.isEmpty) {
+        throw ("Can't connect to this channel");
+      }
+
+      if (await File('TwitchHueBotConfig.ini').exists()) {
+        var f = File('TwitchHueBotConfig.ini');
+        final link = f.openWrite(mode: FileMode.append);
+        link.writeln('\nchannelName:$channelName');
+        await link.close();
+      } else {
+        throw ('TwitchHueBotConfig.ini not found');
+      }
     }
     print('Awaiting connection to "$channelName" Twitch channel');
     var client = tmi.Client(
-      channels: '${channelName.trim()}',
+      channels: '${channelName!.trim()}',
       secure: true,
     );
     client.connect();
